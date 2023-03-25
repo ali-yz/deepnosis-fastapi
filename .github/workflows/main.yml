@@ -37,5 +37,11 @@ jobs:
 
               # check file
               cd app
-              ls -la
+              ls -a
+
+              # activate virtual environment
+              source .venv/bin/activate
+              
+              # use uvicorn to run the app
+              uvicorn app:app --reload
               '
