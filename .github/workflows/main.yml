@@ -28,4 +28,7 @@ jobs:
 
               # Say hi
               echo "Hi Ali"
+
+              # use scp to copy the file to the server in app directory
+              scp -o StrictHostKeyChecking=no -i private_key -r ./ ${USER_NAME}@${HOSTNAME}:/home/${USER_NAME}/app
               '
