@@ -15,4 +15,4 @@ def ping():
 @app.post("/predict")
 def predict(data: InputData):
     # return the age * sex
-    return {"prediction": data["age"] * data["sex"]}
+    return {"prediction": data.age * data.sex}
