@@ -8,6 +8,12 @@ class InputData(BaseModel):
     sex: int
     drug: str
 
+    @validator('drug')
+    def validate_drug_name(cls, v):
+        if v not in ["Drug_A", "Drug_B", "Drug_C"]:
+            raise ValueError("Invalid drug name")
+        return v
+
 @app.get("/ping")
 def ping():
     return {"ping": "pong"}
