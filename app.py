@@ -1,15 +1,18 @@
-# build a simple fastapi application
 from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+class InputData(BaseModel):
+    age: int
+    sex: int
+    drug: str
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
+@app.get("/ping")
+def ping():
+    return {"ping": "pong"}
 
-# Usage
-# uvicorn app:app --reload
+@app.post("/predict")
+def predict(data: InputData):
+    # return the age * sex
+    return {"prediction": data["age"] * data["sex"]}
