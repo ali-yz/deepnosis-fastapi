@@ -30,7 +30,7 @@ jobs:
           scp -o StrictHostKeyChecking=no -i ../private_key -r ./* ${USER_NAME}@${HOSTNAME}:/home/${USER_NAME}/app
           
           # use ssh to run commands on the server
-          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
+          ssh -o StrictHostKeyChecking=no -i ../private_key ${USER_NAME}@${HOSTNAME} '
 
               # Say hi
               echo "Hi Ali"
