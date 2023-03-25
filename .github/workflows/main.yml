@@ -23,12 +23,19 @@ jobs:
             USER_NAME: ${{ vars.USER_NAME }}
       
         run: |
+          # create private key file
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+
+          # use scp to copy the file to the server in app directory
+          scp -o StrictHostKeyChecking=no -i private_key -r ./ ${USER_NAME}@${HOSTNAME}:/home/${USER_NAME}/app
+          
+          # use ssh to run commands on the server
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
 
               # Say hi
               echo "Hi Ali"
 
-              # use scp to copy the file to the server in app directory
-              scp -o StrictHostKeyChecking=no -i private_key -r ./ ${USER_NAME}@${HOSTNAME}:/home/${USER_NAME}/app
+              # check file
+              cd app
+              ls -la
               '
