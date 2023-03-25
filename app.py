@@ -1,14 +1,12 @@
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from pydantic.fields import validator
-
+from pydantic import BaseModel, validator, Field
 
 app = FastAPI()
 
 class InputData(BaseModel):
-    age: int
-    sex: int
-    drug: str
+    age: int = Field(..., gt=0, lt=150, description="Age of the patient")
+    sex: int = Field(..., ge=0, le=1, description="Sex of the patient, 0 for male, 1 for female")
+    drug: str = Field(..., description="Name of the drug prescribed")
 
     @validator('drug')
     def validate_drug_name(cls, v):
