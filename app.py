@@ -18,6 +18,20 @@ class InputData(BaseModel):
             raise ValueError("Invalid drug name")
         return v
 
+    class Config:
+        schema_extra = {
+            "example": {
+                "age": 50,
+                "sex": 0,
+                "height": 180,
+                "weight": 80,
+                "smoking": 0,
+                "precondition": "Precondition_A",
+                "drug": "Drug_A"
+            }
+        }
+
+
 @app.get("/ping")
 def ping():
     return {"ping": "pong"}
