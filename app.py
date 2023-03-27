@@ -6,6 +6,10 @@ app = FastAPI()
 class InputData(BaseModel):
     age: int = Field(..., gt=0, lt=150, description="Age of the patient")
     sex: int = Field(..., ge=0, le=1, description="Sex of the patient, 0 for male, 1 for female")
+    height: float = Field(..., gt=0, description="Height of the patient in cm")
+    weight: float = Field(..., gt=0, description="Weight of the patient in kg")
+    smoking: int = Field(..., ge=0, le=1, description="Smoking status of the patient, 0 for non-smoker, 1 for smoker")
+    precondition: str = Field(..., description="Precondition of the patient")
     drug: str = Field(..., description="Name of the drug prescribed")
 
     @validator('drug')
