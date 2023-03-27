@@ -35,7 +35,7 @@ jobs:
               # Say hi
               echo "Hi Ali"
 
-              # kill the running app
+              # kill the running app on port 80
               sudo kill $(sudo lsof -t -i:80)
 
               # activate the virtual environment
