@@ -3,7 +3,7 @@ from pydantic import BaseModel, validator, Field
 import json
 
 app = FastAPI()
-static_data = json.load(open("static_data.json", "r"))
+static_data = json.load(open("./app/static_data.json", "r"))
 
 
 class InputData(BaseModel):
