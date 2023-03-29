@@ -98,7 +98,7 @@ def predict(input_data: InputData) -> OutputData:
             patient_risk=0.5,
             population_risk_rate=static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['rate'],
             patient_risk_category="low",
-            population_risk_rate_x_three=static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['three_rate'],
+            population_risk_rate_x_three=static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['three_x_rate'],
             recommendation="Take the drug"))
 
     # return the output data
