@@ -2,7 +2,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, validator, Field
 import json
 
-app = FastAPI()
+app = FastAPI(swagger_ui_parameters={"displayRequestDuration": True})
+
 static_data = json.load(open("./app/static_data.json", "r"))
 
 
