@@ -23,15 +23,17 @@ class InputData(BaseModel):
         return v
 
     @validator('precondition')
-    def validate_precondition(cls, v):
-        if v not in static_data["precondition"]:
-            raise ValueError("Invalid precondition name.")
+    def validate_precondition(cls, v: list[str]):
+        for item in v:
+            if item not in static_data["precondition"]:
+                raise ValueError("Invalid precondition name.")
         return v
 
     @validator('other_drug')
-    def validate_other_drug(cls, v):
-        if v not in static_data["other_drug"]:
-            raise ValueError("Invalid other drug name.")
+    def validate_other_drug(cls, v: list[str]):
+        for item in v:
+            if item not in static_data["other_drug"]:
+                raise ValueError("Invalid other drug name.")
         return v
 
     class Config:
