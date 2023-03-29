@@ -94,13 +94,24 @@ def predict(input_data: InputData) -> OutputData:
     # calculate the symptom data
     symptom_data = []
     for symptom in drug_specific_symptom:
+        patient_risk = 0.5
+        population_risk_rate = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['rate']
+        population_risk_rate_x_three = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['three_x_rate']
+        
+        if patient_risk < population_risk_rate:
+            patient_risk_category = "low"
+        elif patient_risk < population_risk_rate_x_three:
+            patient_risk_category = "medium"
+        else:
+            patient_risk_category = "high"
+
         symptom_data.append(SymptomPredictionData(
             symptom_name=symptom,
-            patient_risk=0.5,
-            population_risk_rate=static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['rate'],
-            patient_risk_category="low",
-            population_risk_rate_x_three=static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['three_x_rate'],
-            recommendation="Take the drug"))
+            patient_risk=patient_risk,
+            population_risk_rate=population_risk_rate,
+            patient_risk_category=patient_risk_category,
+            population_risk_rate_x_three=population_risk_rate_x_three,
+            recommendation="Take Your Drug!"))
 
     # return the output data
     output_data = OutputData(
