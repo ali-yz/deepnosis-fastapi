@@ -61,9 +61,11 @@ class BannerData(BaseModel):
 
 class SymptomPredictionData(BaseModel):
     symptom_name: str = Field(..., description="Name of the drug")
+    symptom_category: str = Field(..., description="Category of the symptom.")
+
     patient_risk: float = Field(..., description="Risk of the patient for the symptom")
     population_risk_rate: float = Field(..., description="Average risk of the population for the symptom")
-    patient_risk_category: str = Field(..., description="Risk category of the patient. possible values: low, medium, high")
+    patient_risk_severity: str = Field(..., description="Severity of the patient risk. possible values: low, medium, high")
     population_risk_rate_x_three: float = Field(..., description="Risk rate of the population times 3")
     recommendation: str = Field(..., description="Recommendation for the patient")
 
@@ -94,22 +96,25 @@ def predict(input_data: InputData) -> OutputData:
     # calculate the symptom data
     symptom_data = []
     for symptom in drug_specific_symptom:
+        symptom_category = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['category']
+        
         patient_risk = 0.5
         population_risk_rate = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['rate']
         population_risk_rate_x_three = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['three_x_rate']
         
         if patient_risk < population_risk_rate:
-            patient_risk_category = "low"
+            patient_risk_severity = "low"
         elif patient_risk < population_risk_rate_x_three:
-            patient_risk_category = "medium"
+            patient_risk_severity = "medium"
         else:
-            patient_risk_category = "high"
+            patient_risk_severity = "high"
 
         symptom_data.append(SymptomPredictionData(
             symptom_name=symptom,
+            symptom_category=symptom_category,
             patient_risk=patient_risk,
             population_risk_rate=population_risk_rate,
-            patient_risk_category=patient_risk_category,
+            patient_risk_severity=patient_risk_severity,
             population_risk_rate_x_three=population_risk_rate_x_three,
             recommendation="Take Your Drug!"))
 
