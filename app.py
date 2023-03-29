@@ -50,12 +50,15 @@ class InputData(BaseModel):
             }
         }
 
+class OutputData(BaseModel):
+    prediction: float = Field(..., description="Predicted incidence rate of adverse drug reaction")
+
 
 @app.get("/ping")
 def ping():
     return {"ping": "pong"}
 
 @app.post("/predict")
-def predict(data: InputData):
-    # return the age * sex
-    return {"prediction": data.age * data.sex}
+def predict(input_data: InputData) -> OutputData:
+    output_data = OutputData(prediction=0.5)
+    return output_data
