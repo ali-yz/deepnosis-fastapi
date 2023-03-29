@@ -50,8 +50,25 @@ class InputData(BaseModel):
             }
         }
 
+class BannerData(BaseModel):
+    average_patient_risk_all: float
+    average_patient_risk_severe: float
+    average_patient_risk_moderate: float
+    population_risk_all: float
+    population_risk_severe: float
+    population_risk_moderate: float
+
+class SymptomPredictionData(BaseModel):
+    symptom_name: str = Field(..., description="Name of the drug")
+    patient_risk: float = Field(..., description="Risk of the patient for the symptom")
+    population_risk_rate: float = Field(..., description="Average risk of the population for the symptom")
+    patient_risk_category: str = Field(..., description="Risk category of the patient. possible values: low, medium, high")
+    population_risk_rate_x_three: float = Field(..., description="Risk rate of the population times 3")
+    recommendation: str = Field(..., description="Recommendation for the patient")
+
 class OutputData(BaseModel):
-    prediction: float = Field(..., description="Predicted incidence rate of adverse drug reaction")
+    symptom_data: list[SymptomPredictionData] = Field(..., description="Data for the symptoms that are for the main drug")
+    banner_data: BannerData = Field(..., description="Data for the banner that is for the whole drug")
 
 
 @app.get("/ping")
@@ -60,5 +77,33 @@ def ping():
 
 @app.post("/predict")
 def predict(input_data: InputData) -> OutputData:
-    output_data = OutputData(prediction=0.5)
+    # get the drug specific data
+    drug_data = static_data[f"{input_data.main_drug.lower()}_average"]
+    drug_specific_symptom = static_data[f"{input_data.main_drug.lower()}_symptom"].keys()
+
+    # calculate the banner data
+    banner_data = BannerData(
+        average_patient_risk_all=0.5,
+        average_patient_risk_severe=0.5,
+        average_patient_risk_moderate=0.5,
+        population_risk_all=drug_data["all"],
+        population_risk_severe=drug_data["severe"],
+        population_risk_moderate=drug_data["moderate"])
+    
+    # calculate the symptom data
+    symptom_data = []
+    for symptom in drug_specific_symptom:
+        symptom_data.append(SymptomPredictionData(
+            symptom_name=symptom,
+            patient_risk=0.5,
+            population_risk_rate=static_data[f"{input_data.main_drug.lower()}_symptom"]['rate'],
+            patient_risk_category="low",
+            population_risk_rate_x_three=static_data[f"{input_data.main_drug.lower()}_symptom"]['three_rate'],
+            recommendation="Take the drug"))
+
+    # return the output data
+    output_data = OutputData(
+        symptom_data=symptom_data,
+        banner_data=banner_data)
+
     return output_data
