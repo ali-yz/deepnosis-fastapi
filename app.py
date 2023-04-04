@@ -5,6 +5,7 @@ import json
 app = FastAPI(swagger_ui_parameters={"displayRequestDuration": True})
 
 static_data = json.load(open("./app/static_data.json", "r"))
+static_data_recommendation = json.load(open("./app/static_data_recommendation.json", "r"))
 
 
 class InputData(BaseModel):
@@ -116,7 +117,7 @@ def predict(input_data: InputData) -> OutputData:
             population_risk_rate=population_risk_rate,
             patient_risk_severity=patient_risk_severity,
             population_risk_rate_x_three=population_risk_rate_x_three,
-            recommendation="Take Your Drug!"))
+            recommendation=static_data_recommendation[input_data.main_drug.lower()][symptom]))
 
     # return the output data
     output_data = OutputData(
