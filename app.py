@@ -105,10 +105,18 @@ def predict(input_data: InputData) -> OutputData:
         
         if patient_risk < population_risk_rate:
             patient_risk_severity = "low"
+            recommendation_risk = "Low Risk"
         elif patient_risk < population_risk_rate_x_three:
             patient_risk_severity = "medium"
+            recommendation_risk = "Medium Risk"
         else:
             patient_risk_severity = "high"
+            recommendation_risk = "High Risk"
+
+        symptom_risk_specific_recommendation = static_data_recommendation[input_data.main_drug.lower()][symptom][recommendation_risk]
+        print("###", input_data.main_drug.lower(), "###", symptom, "###", recommendation_risk, "###")
+        print(symptom_risk_specific_recommendation)
+        print("///")
 
         symptom_data.append(SymptomPredictionData(
             symptom_name=symptom,
@@ -117,7 +125,7 @@ def predict(input_data: InputData) -> OutputData:
             population_risk_rate=population_risk_rate,
             patient_risk_severity=patient_risk_severity,
             population_risk_rate_x_three=population_risk_rate_x_three,
-            recommendation=static_data_recommendation[input_data.main_drug.lower()][symptom]))
+            recommendation=symptom_risk_specific_recommendation))
 
     # return the output data
     output_data = OutputData(
