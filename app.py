@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from pydantic import BaseModel, validator, Field
 import json
 
@@ -52,6 +52,7 @@ class InputData(BaseModel):
             }
         }
 
+
 class BannerData(BaseModel):
     average_patient_risk_all: float
     average_patient_risk_severe: float
@@ -59,6 +60,7 @@ class BannerData(BaseModel):
     population_risk_all: float
     population_risk_severe: float
     population_risk_moderate: float
+
 
 class SymptomPredictionData(BaseModel):
     symptom_name: str = Field(..., description="Name of the drug")
@@ -70,6 +72,7 @@ class SymptomPredictionData(BaseModel):
     population_risk_rate_x_three: float = Field(..., description="Risk rate of the population times 3")
     recommendation: str = Field(..., description="Recommendation for the patient")
 
+
 class OutputData(BaseModel):
     symptom_data: list[SymptomPredictionData] = Field(..., description="Data for the symptoms that are for the main drug")
     banner_data: BannerData = Field(..., description="Data for the banner that is for the whole drug")
@@ -78,6 +81,7 @@ class OutputData(BaseModel):
 @app.get("/ping")
 def ping():
     return {"ping": "pong"}
+
 
 @app.post("/predict")
 def predict(input_data: InputData) -> OutputData:
@@ -93,16 +97,16 @@ def predict(input_data: InputData) -> OutputData:
         population_risk_all=drug_data["all"],
         population_risk_severe=drug_data["severe"],
         population_risk_moderate=drug_data["moderate"])
-    
+
     # calculate the symptom data
     symptom_data = []
     for symptom in drug_specific_symptom:
         symptom_category = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['category']
-        
+
         patient_risk = 0.5
         population_risk_rate = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['rate']
         population_risk_rate_x_three = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['three_x_rate']
-        
+
         if patient_risk < population_risk_rate:
             patient_risk_severity = "low"
             recommendation_risk = "Low Risk"
