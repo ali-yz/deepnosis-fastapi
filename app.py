@@ -1,11 +1,31 @@
 from fastapi import FastAPI
 from pydantic import BaseModel, validator, Field
+import sentry_sdk
+from collections import defaultdict
+import pickle
 import json
+
+
+sentry_sdk.init(
+    dsn="https://52334479b581416f822df2c10d95f653@o4505065312485376.ingest.sentry.io/4505065314189312",
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production,
+    traces_sample_rate=1.0,
+)
 
 app = FastAPI(swagger_ui_parameters={"displayRequestDuration": True})
 
 static_data = json.load(open("./app/static_data.json", "r"))
 static_data_recommendation = json.load(open("./app/static_data_recommendation.json", "r"))
+
+models = {'avastin': defaultdict(dict), 'revlimid': defaultdict(dict)}
+
+for drug in models.keys():
+    for symptom in static_data[f'{drug}_symptom'].keys():
+        with open(f"./app/models/{drug}/over_{symptom.replace(' ', '_')}.model", "rb") as f:
+            models[drug][symptom] = pickle.load(f)
 
 
 class InputData(BaseModel):
@@ -89,21 +109,29 @@ def predict(input_data: InputData) -> OutputData:
     drug_data = static_data[f"{input_data.main_drug.lower()}_average"]
     drug_specific_symptom = static_data[f"{input_data.main_drug.lower()}_symptom"].keys()
 
-    # calculate the banner data
-    banner_data = BannerData(
-        average_patient_risk_all=0.5,
-        average_patient_risk_severe=0.5,
-        average_patient_risk_moderate=0.5,
-        population_risk_all=drug_data["all"],
-        population_risk_severe=drug_data["severe"],
-        population_risk_moderate=drug_data["moderate"])
-
     # calculate the symptom data
     symptom_data = []
+    severe_risks = []
+    moderate_risks = []
     for symptom in drug_specific_symptom:
         symptom_category = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['category']
 
-        patient_risk = 0.5
+        patient_model_data = []
+        patient_model_data.append(input_data.age)
+        patient_model_data.append(input_data.sex)
+        for other_drug in static_data[f"{input_data.main_drug.lower()}_other_drug"]:
+            if other_drug in input_data.other_drug:
+                patient_model_data.append(1)
+            else:
+                patient_model_data.append(0)
+
+        patient_risk = models[input_data.main_drug.lower()][symptom].predict_proba([patient_model_data])[0][0]
+
+        if static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['severity'] == "Serious":
+            severe_risks.append(patient_risk)
+        elif static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['severity'] == "Moderate":
+            moderate_risks.append(patient_risk)
+
         population_risk_rate = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['rate']
         population_risk_rate_x_three = static_data[f"{input_data.main_drug.lower()}_symptom"][symptom]['three_x_rate']
 
@@ -130,6 +158,19 @@ def predict(input_data: InputData) -> OutputData:
             patient_risk_severity=patient_risk_severity,
             population_risk_rate_x_three=population_risk_rate_x_three,
             recommendation=symptom_risk_specific_recommendation))
+
+    # calculate the banner data
+    all_risks = severe_risks + moderate_risks
+    risk_all = sum(all_risks) / len(all_risks)
+    risk_severe = sum(severe_risks) / len(severe_risks)
+    risk_moderate = sum(moderate_risks) / len(moderate_risks)
+    banner_data = BannerData(
+        average_patient_risk_all=risk_all,
+        average_patient_risk_severe=risk_severe,
+        average_patient_risk_moderate=risk_moderate,
+        population_risk_all=drug_data["all"],
+        population_risk_severe=drug_data["severe"],
+        population_risk_moderate=drug_data["moderate"])
 
     # return the output data
     output_data = OutputData(
