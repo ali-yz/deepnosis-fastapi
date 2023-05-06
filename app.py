@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, validator, Field
 import sentry_sdk
 from collections import defaultdict
@@ -16,6 +17,14 @@ sentry_sdk.init(
 )
 
 app = FastAPI(swagger_ui_parameters={"displayRequestDuration": True})
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 static_data = json.load(open("./app/static_data.json", "r"))
 static_data_recommendation = json.load(open("./app/static_data_recommendation.json", "r"))
